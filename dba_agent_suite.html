@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DBA Agent Runtime — Complete Artifact Suite</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Sora:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg:       #0d1117;
+  --surface:  #161b22;
+  --border:   #30363d;
+  --accent:   #58a6ff;
+  --accent2:  #3fb950;
+  --accent3:  #f78166;
+  --accent4:  #e3b341;
+  --accent5:  #bc8cff;
+  --text:     #e6edf3;
+  --muted:    #8b949e;
+  --tag-bg:   #1f2d3d;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Sora', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ── TOP NAV ── */
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-icon { font-size: 24px; }
+header h1 { font-size: 16px; font-weight: 600; color: var(--text); }
+header p  { font-size: 12px; color: var(--muted); margin-top: 1px; }
+.badge {
+  margin-left: auto;
+  background: #1a2d1a;
+  color: var(--accent2);
+  border: 1px solid #2d5a2d;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+/* ── LAYOUT ── */
+.shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: calc(100vh - 57px);
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 20px 0;
+  position: sticky;
+  top: 57px;
+  height: calc(100vh - 57px);
+  overflow-y: auto;
+}
+.sidebar-section {
+  margin-bottom: 4px;
+}
+.sidebar-group-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  padding: 8px 20px 4px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 20px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: all 0.15s;
+  font-size: 13px;
+  color: var(--muted);
+}
+.nav-item:hover { background: rgba(88,166,255,0.05); color: var(--text); }
+.nav-item.active { border-left-color: var(--accent); background: rgba(88,166,255,0.08); color: var(--accent); }
+.nav-item .nav-icon { font-size: 15px; flex-shrink: 0; }
+.nav-item .nav-label { flex: 1; }
+.nav-item .nav-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.nb-high   { background: #3d1a1a; color: var(--accent3); }
+.nb-med    { background: #3d2e1a; color: var(--accent4); }
+.nb-low    { background: #1a3d1a; color: var(--accent2); }
+.nb-info   { background: #1a2a3d; color: var(--accent); }
+
+/* ── MAIN ── */
+main {
+  padding: 32px 40px;
+  overflow-y: auto;
+}
+
+/* ── PANELS ── */
+.panel { display: none; }
+.panel.active { display: block; }
+
+.panel-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.panel-icon { font-size: 32px; flex-shrink: 0; }
+.panel-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.panel-subtitle { font-size: 13px; color: var(--muted); line-height: 1.5; }
+.panel-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.meta-chip {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+.mc-blue   { background: #1a2d4d; color: #79c0ff; border: 1px solid #1f3d63; }
+.mc-green  { background: #1a3d1a; color: #7ee787; border: 1px solid #2d5a2d; }
+.mc-red    { background: #3d1a1a; color: #ff7b72; border: 1px solid #5a2d2d; }
+.mc-yellow { background: #3d2e1a; color: #f1c232; border: 1px solid #5a4a2d; }
+.mc-purple { background: #2d1a3d; color: #d2a8ff; border: 1px solid #4a2d5a; }
+
+/* ── CODE BLOCKS ── */
+.code-block {
+  background: #010409;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 16px 0;
+}
+.code-header {
+  background: #161b22;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.code-lang {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.code-filename { font-size: 12px; color: var(--accent4); font-family: 'JetBrains Mono', monospace; margin-left: auto; }
+pre {
+  padding: 20px;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: #e6edf3;
+}
+
+/* syntax colours */
+.kw  { color: #ff7b72; }   /* keywords */
+.st  { color: #a5d6ff; }   /* strings */
+.cm  { color: #8b949e; font-style: italic; } /* comments */
+.fn  { color: #d2a8ff; }   /* functions */
+.nm  { color: #79c0ff; }   /* names/identifiers */
+.op  { color: #ffa657; }   /* operators/values */
+.tg  { color: #7ee787; }   /* tags */
+
+/* ── SECTIONS ── */
+.section { margin-bottom: 32px; }
+.section-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--muted);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* ── SKILL CARDS ── */
+.skill-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+.skill-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s;
+}
+.skill-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+.skill-card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.skill-card-icon { font-size: 18px; }
+.skill-card-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.skill-card-version { font-size: 10px; color: var(--muted); margin-left: auto; font-family: 'JetBrains Mono', monospace; }
+.skill-card-desc { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 10px; }
+.skill-card-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.skill-tag {
+  background: var(--tag-bg);
+  color: #79c0ff;
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.risk-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+}
+.risk-high   { background: var(--accent3); box-shadow: 0 0 4px var(--accent3); }
+.risk-medium { background: var(--accent4); box-shadow: 0 0 4px var(--accent4); }
+.risk-low    { background: var(--accent2); box-shadow: 0 0 4px var(--accent2); }
+
+/* ── FLOW DIAGRAM ── */
+.flow { display: flex; flex-direction: column; gap: 6px; }
+.flow-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.step-num {
+  width: 28px; height: 28px;
+  background: linear-gradient(135deg, #1f3d63, #2d5a8a);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #79c0ff;
+  flex-shrink: 0;
+}
+.step-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.step-desc  { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.flow-arrow { text-align: center; color: var(--muted); font-size: 16px; }
+
+/* ── PERMISSION TABLE ── */
+.perm-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.perm-table th {
+  background: #161b22;
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  border-bottom: 2px solid var(--border);
+}
+.perm-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text);
+}
+.perm-table tr:hover td { background: rgba(88,166,255,0.03); }
+.perm-read   { color: #79c0ff; }
+.perm-write  { color: var(--accent4); }
+.perm-exec   { color: var(--accent5); }
+.perm-deny   { color: var(--accent3); text-decoration: line-through; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-icon">🗄️</div>
+  <div>
+    <h1>Agent Runtime — Database Administrator</h1>
+    <p>Complete artifact suite: agent.yaml · SKILL.MDs · Contract Scripts · L1 Manifest</p>
+  </div>
+  <div class="badge">✓ Production Ready</div>
+</header>
+
+<div class="shell">
+
+  <!-- ── SIDEBAR ── -->
+  <nav class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-group-label">Identity & Governance</div>
+      <div class="nav-item active" onclick="show('agent-yaml')">
+        <span class="nav-icon">⚙️</span>
+        <span class="nav-label">agent.yaml</span>
+        <span class="nav-badge nb-high">HIGH</span>
+      </div>
+      <div class="nav-item" onclick="show('manifest')">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">L1 Manifest</span>
+        <span class="nav-badge nb-info">JSON</span>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-group-label">Skill Library</div>
+      <div class="nav-item" onclick="show('skill-contract')">
+        <span class="nav-icon">▶️</span>
+        <span class="nav-label">Contract Script Runner</span>
+        <span class="nav-badge nb-high">L3</span>
+      </div>
+      <div class="nav-item" onclick="show('skill-migrate')">
+        <span class="nav-icon">🔀</span>
+        <span class="nav-label">Schema Migrate</span>
+        <span class="nav-badge nb-high">L2</span>
+      </div>
+      <div class="nav-item" onclick="show('skill-health')">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">Health Report</span>
+        <span class="nav-badge nb-low">L2</span>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-group-label">Contract Scripts</div>
+      <div class="nav-item" onclick="show('script-forward')">
+        <span class="nav-icon">📄</span>
+        <span class="nav-label">add_indexes_orders v1</span>
+        <span class="nav-badge nb-med">SQL</span>
+      </div>
+      <div class="nav-item" onclick="show('script-rollback')">
+        <span class="nav-icon">↩️</span>
+        <span class="nav-label">Rollback Script</span>
+        <span class="nav-badge nb-med">SQL</span>
+      </div>
+      <div class="nav-item" onclick="show('script-validate')">
+        <span class="nav-icon">✅</span>
+        <span class="nav-label">Validation Script</span>
+        <span class="nav-badge nb-low">SQL</span>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-group-label">Overview</div>
+      <div class="nav-item" onclick="show('overview')">
+        <span class="nav-icon">🗺️</span>
+        <span class="nav-label">All Skills Overview</span>
+        <span class="nav-badge nb-info">16</span>
+      </div>
+      <div class="nav-item" onclick="show('flow')">
+        <span class="nav-icon">🔄</span>
+        <span class="nav-label">Execution Flow</span>
+        <span class="nav-badge nb-info">E2E</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── MAIN ── -->
+  <main>
+
+    <!-- agent.yaml -->
+    <div id="agent-yaml" class="panel active">
+      <div class="panel-header">
+        <div class="panel-icon">⚙️</div>
+        <div>
+          <div class="panel-title">agent.yaml</div>
+          <div class="panel-subtitle">Complete identity, permissions, skill allowlist and governance configuration for the Database Administrator agent role.</div>
+          <div class="panel-meta">
+            <span class="meta-chip mc-red">trust_level: high</span>
+            <span class="meta-chip mc-blue">role: database_administrator</span>
+            <span class="meta-chip mc-yellow">environment: production</span>
+            <span class="meta-chip mc-green">16 allowed skills</span>
+            <span class="meta-chip mc-purple">require_mfa: true</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Permissions Matrix</div>
+        <table class="perm-table">
+          <thead><tr><th>Type</th><th>Resource</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="perm-read">READ</td><td>prod_databases</td><td>Read replicas preferred</td></tr>
+            <tr><td class="perm-read">READ</td><td>prod_schema_registry</td><td>Schema version lookups</td></tr>
+            <tr><td class="perm-read">READ</td><td>prod_slow_query_log</td><td>Performance analysis</td></tr>
+            <tr><td class="perm-read">READ</td><td>s3_skill_library</td><td>Fetch SKILL.MDs and scripts</td></tr>
+            <tr><td class="perm-write">WRITE</td><td>prod_databases</td><td>DDL/DML gated by approval</td></tr>
+            <tr><td class="perm-write">WRITE</td><td>prod_schema_registry</td><td>Write migration versions</td></tr>
+            <tr><td class="perm-write">WRITE</td><td>s3_backup_bucket</td><td>Write backup archives</td></tr>
+            <tr><td class="perm-write">WRITE</td><td>qa_sandbox_database</td><td>Full write for restore validation</td></tr>
+            <tr><td class="perm-exec">EXECUTE</td><td>contract_scripts</td><td>Pre-approved scripts only</td></tr>
+            <tr><td class="perm-exec">EXECUTE</td><td>db_maintenance_jobs</td><td>VACUUM, ANALYZE, REINDEX</td></tr>
+            <tr><td class="perm-deny">DENY</td><td>drop_production_database</td><td>Hard deny — explicit block</td></tr>
+            <tr><td class="perm-deny">DENY</td><td>truncate_audit_logs</td><td>Cannot modify audit trail</td></tr>
+            <tr><td class="perm-deny">DENY</td><td>create_superuser</td><td>Human + ticket required</td></tr>
+            <tr><td class="perm-deny">DENY</td><td>access_pii_columns</td><td>Requires data_steward role</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Full agent.yaml Source</div>
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">YAML</span>
+            <span class="code-filename">agent.yaml</span>
+          </div>
+<pre><span class="cm"># =======================================================</span>
+<span class="cm"># Agent Runtime Governance Configuration</span>
+<span class="cm"># Role: database_administrator</span>
+<span class="cm"># =======================================================</span>
+
+<span class="kw">version</span>: <span class="st">"1.0"</span>
+
+<span class="nm">identity</span>:
+  <span class="kw">role</span>: <span class="op">database_administrator</span>
+  <span class="kw">display_name</span>: <span class="st">"Database Administrator Agent"</span>
+  <span class="kw">trust_level</span>: <span class="op">high</span>
+  <span class="kw">environment</span>: <span class="op">production</span>
+  <span class="nm">auth</span>:
+    <span class="kw">method</span>: <span class="op">service_account</span>
+    <span class="kw">service_account_id</span>: <span class="st">sa-dba-agent-001</span>
+    <span class="kw">token_expiry_seconds</span>: <span class="op">3600</span>
+    <span class="kw">require_mfa</span>: <span class="op">true</span>
+
+<span class="nm">allowed_skills</span>:
+  - <span class="kw">skill_id</span>: <span class="tg">db_schema_introspect</span>
+    <span class="kw">context_level</span>: <span class="op">L2</span>
+    <span class="kw">requires_approval</span>: <span class="op">false</span>
+  - <span class="kw">skill_id</span>: <span class="tg">db_schema_migrate</span>
+    <span class="kw">context_level</span>: <span class="op">L2</span>
+    <span class="kw">requires_approval</span>: <span class="op">true</span>
+  - <span class="kw">skill_id</span>: <span class="tg">db_contract_script_runner</span>
+    <span class="kw">context_level</span>: <span class="op">L3</span>
+    <span class="kw">requires_approval</span>: <span class="op">true</span>
+  - <span class="kw">skill_id</span>: <span class="tg">db_health_report</span>
+    <span class="kw">context_level</span>: <span class="op">L2</span>
+    <span class="kw">requires_approval</span>: <span class="op">false</span>
+  <span class="cm">  # ... 12 more skills (see Skills Overview tab)</span>
+
+<span class="nm">permissions</span>:
+  <span class="kw">read</span>:   [<span class="op">prod_databases, prod_schema_registry, s3_skill_library</span>]
+  <span class="kw">write</span>:  [<span class="op">prod_databases, prod_schema_registry, s3_backup_bucket</span>]
+  <span class="kw">execute</span>: [<span class="op">contract_scripts, db_maintenance_jobs, backup_restore_jobs</span>]
+  <span class="kw">deny</span>:   [<span class="op">drop_production_database, truncate_audit_logs, create_superuser</span>]
+
+<span class="nm">governance</span>:
+  <span class="kw">max_executions_per_hour</span>: <span class="op">60</span>
+  <span class="kw">max_executions_per_day</span>:  <span class="op">200</span>
+  <span class="nm">require_approval</span>:
+    <span class="kw">default</span>: <span class="op">false</span>
+    <span class="nm">override_skills</span>:
+      - <span class="tg">db_schema_migrate</span>
+      - <span class="tg">db_contract_script_runner</span>
+      - <span class="tg">db_user_create</span>
+      - <span class="tg">db_privilege_revoke</span>
+  <span class="nm">approval_config</span>:
+    <span class="nm">approvers</span>:
+      - <span class="kw">role</span>: <span class="op">senior_dba</span>
+      - <span class="kw">role</span>: <span class="op">platform_engineering_lead</span>
+    <span class="kw">approval_timeout_minutes</span>: <span class="op">30</span>
+  <span class="nm">audit</span>:
+    <span class="kw">enabled</span>: <span class="op">true</span>
+    <span class="kw">retain_days</span>: <span class="op">365</span>
+  <span class="nm">change_window</span>:
+    <span class="kw">allowed_days</span>: [<span class="op">Monday, Tuesday, Wednesday, Thursday</span>]
+    <span class="kw">allowed_hours_utc</span>: <span class="st">"08:00-18:00"</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Manifest -->
+    <div id="manifest" class="panel">
+      <div class="panel-header">
+        <div class="panel-icon">📋</div>
+        <div>
+          <div class="panel-title">L1 Skill Manifest</div>
+          <div class="panel-subtitle">Lightweight JSON tag index loaded by the Orchestrator on init. Contains intent keywords, checksums, and context levels — without fetching full SKILL.MD files.</div>
+          <div class="panel-meta">
+            <span class="meta-chip mc-blue">16 skills indexed</span>
+            <span class="meta-chip mc-green">s3://company-skill-library-prod</span>
+            <span class="meta-chip mc-yellow">cache_ttl: 300s</span>
+          </div>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">JSON</span><span class="code-filename">dba_l1_manifest.json</span></div>
+<pre>{
+  <span class="kw">"manifest_version"</span>: <span class="st">"1.0"</span>,
+  <span class="kw">"role"</span>: <span class="st">"database_administrator"</span>,
+  <span class="kw">"skills"</span>: [
+    {
+      <span class="kw">"skill_id"</span>: <span class="tg">"db_contract_script_runner"</span>,
+      <span class="kw">"version"</span>: <span class="st">"2.1.0"</span>,
+      <span class="kw">"display_name"</span>: <span class="st">"Contract Script Runner"</span>,
+      <span class="kw">"tags"</span>: [<span class="st">"contract_script"</span>, <span class="st">"execution"</span>, <span class="st">"automation"</span>, <span class="st">"write"</span>],
+      <span class="kw">"context_level"</span>: <span class="op">"L3"</span>,
+      <span class="kw">"requires_approval"</span>: <span class="op">true</span>,
+      <span class="kw">"risk"</span>: <span class="op">"high"</span>,
+      <span class="kw">"intent_keywords"</span>: [
+        <span class="st">"run contract script"</span>, <span class="st">"execute script"</span>,
+        <span class="st">"apply contract"</span>, <span class="st">"run approved script"</span>
+      ],
+      <span class="kw">"s3_key"</span>: <span class="st">"skills/db_contract_script_runner/SKILL.md"</span>,
+      <span class="kw">"checksum_sha256"</span>: <span class="st">"c3a4b5c6...f7a8b9c0"</span>
+    },
+    {
+      <span class="kw">"skill_id"</span>: <span class="tg">"db_health_report"</span>,
+      <span class="kw">"version"</span>: <span class="st">"1.4.0"</span>,
+      <span class="kw">"tags"</span>: [<span class="st">"report"</span>, <span class="st">"read"</span>, <span class="st">"health"</span>, <span class="st">"monitoring"</span>],
+      <span class="kw">"context_level"</span>: <span class="op">"L2"</span>,
+      <span class="kw">"requires_approval"</span>: <span class="op">false</span>,
+      <span class="kw">"risk"</span>: <span class="op">"low"</span>,
+      <span class="kw">"intent_keywords"</span>: [
+        <span class="st">"health report"</span>, <span class="st">"database status"</span>,
+        <span class="st">"check database health"</span>, <span class="st">"bloat report"</span>
+      ]
+    }
+    <span class="cm">// ... 14 more entries</span>
+  ]
+}</pre>
+      </div>
+    </div>
+
+    <!-- Contract Script Runner SKILL -->
+    <div id="skill-contract" class="panel">
+      <div class="panel-header">
+        <div class="panel-icon">▶️</div>
+        <div>
+          <div class="panel-title">SKILL: db_contract_script_runner</div>
+          <div class="panel-subtitle">Execute pre-approved, versioned contract SQL/shell scripts with checksum verification, approval gating, rollback, and full audit logging.</div>
+          <div class="panel-meta">
+            <span class="meta-chip mc-red">risk: high</span>
+            <span class="meta-chip mc-purple">context: L3</span>
+            <span class="meta-chip mc-yellow">requires_approval: true</span>
+            <span class="meta-chip mc-blue">v2.1.0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Execution Steps</div>
+        <div class="flow">
+          <div class="flow-step"><div class="step-num">1</div><div><div class="step-title">Validate Inputs</div><div class="step-desc">Assert script_name, target_database in registry, approval_ticket valid for production.</div></div></div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step"><div class="step-num">2</div><div><div class="step-title">Fetch Script from S3 + Verify Checksum</div><div class="step-desc">Download from <code style="color:#a5d6ff">s3://company-skill-library-prod/skills/.../contract_scripts/</code>. SHA-256 must match L1 manifest. Mismatch → security incident, abort.</div></div></div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step"><div class="step-num">3</div><div><div class="step-title">Pre-flight Connection Check</div><div class="step-desc">psql SELECT 1 with 5s timeout. Abort with CONNECTION_FAILED if unreachable.</div></div></div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step"><div class="step-num">4</div><div><div class="step-title">If dry_run=true → Impact Report</div><div class="step-desc">Wrap in BEGIN/ROLLBACK. Capture estimated row counts, lock types, DDL changes. Return dry_run_report and exit.</div></div></div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step"><div class="step-num">5</div><div><div class="step-title">Execute in Transaction</div><div class="step-desc">BEGIN with statement_timeout and lock_timeout. On any error → ROLLBACK → execute paired rollback script if enabled.</div></div></div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step"><div class="step-num">6</div><div><div class="step-title">Post-execution Validation</div><div class="step-desc">Run *_validate.sql if present in S3. Assert validation_result.passed == true.</div></div></div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step"><div class="step-num">7</div><div><div class="step-title">Audit Log + Notify</div><div class="step-desc">Write structured JSON audit record to audit_log_store. Post summary to notify_channel if configured.</div></div></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Example Invocation</div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">YAML</span><span class="code-filename">skill_invocation</span></div>
+<pre><span class="nm">skill_invocation</span>:
+  <span class="kw">skill_id</span>: <span class="tg">db_contract_script_runner</span>
+  <span class="kw">role</span>: <span class="op">database_administrator</span>
+  <span class="nm">parameters</span>:
+    <span class="kw">script_name</span>:           <span class="st">"add_indexes_orders_v1.sql"</span>
+    <span class="kw">script_version</span>:        <span class="st">"1.0.0"</span>
+    <span class="kw">target_database</span>:       <span class="st">"prod-db-01"</span>
+    <span class="kw">approval_ticket_id</span>:    <span class="st">"CHANGE-2024-0847"</span>
+    <span class="kw">dry_run</span>:               <span class="op">false</span>
+    <span class="kw">rollback_on_failure</span>:   <span class="op">true</span>
+    <span class="kw">notify_channel</span>:        <span class="st">"#dba-alerts"</span>
+    <span class="kw">execution_timeout_seconds</span>: <span class="op">300</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Schema Migrate SKILL -->
+    <div id="skill-migrate" class="panel">
+      <div class="panel-header">
+        <div class="panel-icon">🔀</div>
+        <div>
+          <div class="panel-title">SKILL: db_schema_migrate</div>
+          <div class="panel-subtitle">Apply a versioned schema migration using a contract script. Enforces sequential version ordering, idempotency checks, and full rollback support.</div>
+          <div class="panel-meta">
+            <span class="meta-chip mc-red">risk: high</span>
+            <span class="meta-chip mc-blue">context: L2</span>
+            <span class="meta-chip mc-yellow">requires_approval: true</span>
+            <span class="meta-chip mc-green">idempotent</span>
+          </div>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">SQL</span><span class="code-filename">Version Sequence Guard</span></div>
+<pre><span class="cm">-- Step 1: Ensure sequential version ordering</span>
+<span class="kw">SELECT</span> version <span class="kw">FROM</span> <span class="nm">schema_version</span>
+<span class="kw">ORDER BY</span> applied_at <span class="kw">DESC LIMIT</span> <span class="op">1</span>;
+<span class="cm">-- current=3.3.2, requested=3.4.0 → ALLOWED</span>
+<span class="cm">-- current=3.3.2, requested=3.5.0 → REJECTED (gap)</span>
+
+<span class="cm">-- Step 2: Idempotency check</span>
+<span class="kw">SELECT</span> <span class="op">1</span> <span class="kw">FROM</span> <span class="nm">schema_version</span>
+<span class="kw">WHERE</span> version = <span class="st">'3.4.0'</span>;
+<span class="cm">-- Row exists → migration already applied → no-op, return success</span>
+
+<span class="cm">-- Step 4: Execute in transaction</span>
+<span class="kw">BEGIN</span>;
+  <span class="cm">-- [migration SQL injected here]</span>
+  <span class="kw">INSERT INTO</span> <span class="nm">schema_version</span> (version, applied_at, applied_by, checksum)
+  <span class="kw">VALUES</span> (<span class="st">'3.4.0'</span>, <span class="fn">NOW</span>(), <span class="st">'dba_agent'</span>, <span class="st">'&lt;checksum&gt;'</span>);
+<span class="kw">COMMIT</span>;</pre>
+      </div>
+    </div>
+
+    <!-- Health Report SKILL -->
+    <div id="skill-health" class="panel">
+      <div class="panel-header">
+        <div class="panel-icon">📊</div>
+        <div>
+          <div class="panel-title">SKILL: db_health_report</div>
+          <div class="panel-subtitle">Read-only health assessment covering bloat, indexes, replication lag, lock contention, connection pool utilisation, and slow queries. Green/Yellow/Red per metric.</div>
+          <div class="panel-meta">
+            <span class="meta-chip mc-green">risk: low</span>
+            <span class="meta-chip mc-blue">context: L2</span>
+            <span class="meta-chip mc-green">read-only</span>
+            <span class="meta-chip mc-blue">v1.4.0</span>
+          </div>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">SQL</span><span class="code-filename">Bloat Detection Query</span></div>
+<pre><span class="kw">SELECT</span>
+    schemaname, tablename,
+    <span class="fn">pg_size_pretty</span>(<span class="fn">pg_total_relation_size</span>(
+        schemaname||<span class="st">'.'</span>||tablename)) <span class="kw">AS</span> total_size,
+    <span class="fn">ROUND</span>(<span class="op">100</span> * (<span class="op">1</span> - (n_live_tup::<span class="nm">numeric</span> /
+        <span class="fn">NULLIF</span>(n_live_tup + n_dead_tup, <span class="op">0</span>))), <span class="op">2</span>) <span class="kw">AS</span> dead_tuple_pct,
+    last_autovacuum, last_autoanalyze
+<span class="kw">FROM</span> <span class="nm">pg_stat_user_tables</span>
+<span class="kw">WHERE</span> n_live_tup + n_dead_tup > <span class="op">10000</span>
+<span class="kw">ORDER BY</span> dead_tuple_pct <span class="kw">DESC LIMIT</span> <span class="op">20</span>;</pre>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">YAML</span><span class="code-filename">Health Thresholds</span></div>
+<pre><span class="cm"># Threshold definitions used to classify Green / Yellow / Red</span>
+<span class="nm">thresholds</span>:
+  <span class="nm">dead_tuple_pct</span>:
+    <span class="kw">green</span>:  <span class="op">"&lt; 10%"</span>
+    <span class="kw">yellow</span>: <span class="op">"10–30%"</span>
+    <span class="kw">red</span>:    <span class="op">"&gt; 30%"</span>
+  <span class="nm">replication_lag_mb</span>:
+    <span class="kw">green</span>:  <span class="op">"&lt; 1 MB"</span>
+    <span class="kw">yellow</span>: <span class="op">"1–50 MB"</span>
+    <span class="kw">red</span>:    <span class="op">"&gt; 50 MB"</span>
+  <span class="nm">connection_utilisation_pct</span>:
+    <span class="kw">green</span>:  <span class="op">"&lt; 70%"</span>
+    <span class="kw">yellow</span>: <span class="op">"70–90%"</span>
+    <span class="kw">red</span>:    <span class="op">"&gt; 90%"</span>
+  <span class="nm">slow_query_mean_ms</span>:
+    <span class="kw">green</span>:  <span class="op">"&lt; 100ms"</span>
+    <span class="kw">yellow</span>: <span class="op">"100–1000ms"</span>
+    <span class="kw">red</span>:    <span class="op">"&gt; 1000ms"</span></pre>
+      </div>
+    </div>
+
+    <!-- Forward Script -->
+    <div id="script-forward" class="panel">
+      <div class="panel-header">
+        <div class="panel-icon">📄</div>
+        <div>
+          <div class="panel-title">add_indexes_orders_v1.sql</div>
+          <div class="panel-subtitle">Contract script: adds 4 concurrent non-locking indexes to the orders schema to resolve slow query findings from the health report.</div>
+          <div class="panel-meta">
+            <span class="meta-chip mc-yellow">migration: V3.4.0</span>
+            <span class="meta-chip mc-blue">CHANGE-2024-0847</span>
+            <span class="meta-chip mc-green">CONCURRENT — no table lock</span>
+            <span class="meta-chip mc-red">requires approval</span>
+          </div>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">SQL</span><span class="code-filename">add_indexes_orders_v1.sql · v1.0.0</span></div>
+<pre><span class="cm">-- ============================================================</span>
+<span class="cm">-- CONTRACT SCRIPT: add_indexes_orders_v1.sql · V3.4.0</span>
+<span class="cm">-- Approval: CHANGE-2024-0847 | Risk: Medium</span>
+<span class="cm">-- Rollback: add_indexes_orders_v1_rollback.sql</span>
+<span class="cm">-- ============================================================</span>
+
+<span class="kw">SET</span> statement_timeout = <span class="st">'0'</span>;   <span class="cm">-- Disable for CONCURRENT builds</span>
+<span class="kw">SET</span> lock_timeout      = <span class="st">'5s'</span>;
+<span class="kw">SET</span> work_mem          = <span class="st">'256MB'</span>;
+
+<span class="cm">-- Index 1: Customer lookup with status filter</span>
+<span class="kw">CREATE INDEX CONCURRENTLY IF NOT EXISTS</span>
+    <span class="nm">idx_orders_customer_status</span>
+<span class="kw">ON</span> <span class="nm">orders</span> (customer_id, status)
+<span class="kw">WHERE</span> status <span class="kw">NOT IN</span> (<span class="st">'archived'</span>, <span class="st">'cancelled'</span>);
+
+<span class="kw">SELECT</span> <span class="fn">pg_sleep</span>(<span class="op">2</span>);   <span class="cm">-- Reduce I/O pressure between builds</span>
+
+<span class="cm">-- Index 2: Date-range queries with status</span>
+<span class="kw">CREATE INDEX CONCURRENTLY IF NOT EXISTS</span>
+    <span class="nm">idx_orders_created_at_status</span>
+<span class="kw">ON</span> <span class="nm">orders</span> (created_at <span class="kw">DESC</span>, status)
+<span class="kw">INCLUDE</span> (customer_id, total_amount);
+
+<span class="kw">SELECT</span> <span class="fn">pg_sleep</span>(<span class="op">2</span>);
+
+<span class="cm">-- Index 3: order_items FK lookup</span>
+<span class="kw">CREATE INDEX CONCURRENTLY IF NOT EXISTS</span>
+    <span class="nm">idx_order_items_order_id</span>
+<span class="kw">ON</span> <span class="nm">order_items</span> (order_id)
+<span class="kw">INCLUDE</span> (product_id, quantity, unit_price);
+
+<span class="kw">SELECT</span> <span class="fn">pg_sleep</span>(<span class="op">2</span>);
+
+<span class="cm">-- Index 4: Product sales aggregation</span>
+<span class="kw">CREATE INDEX CONCURRENTLY IF NOT EXISTS</span>
+    <span class="nm">idx_order_items_product_agg</span>
+<span class="kw">ON</span> <span class="nm">order_items</span> (product_id, created_at <span class="kw">DESC</span>)
+<span class="kw">INCLUDE</span> (quantity, unit_price);
+
+<span class="cm">-- Refresh statistics post-build</span>
+<span class="kw">ANALYZE</span> <span class="nm">orders</span>;
+<span class="kw">ANALYZE</span> <span class="nm">order_items</span>;
+
+<span class="cm">-- Record migration (idempotency guard)</span>
+<span class="kw">INSERT INTO</span> <span class="nm">schema_version</span>
+    (version, description, applied_at, applied_by, script_name)
+<span class="kw">VALUES</span> (<span class="st">'3.4.0'</span>, <span class="st">'add_indexes_orders_v1'</span>, <span class="fn">NOW</span>(),
+        <span class="fn">current_user</span>, <span class="st">'add_indexes_orders_v1.sql'</span>)
+<span class="kw">ON CONFLICT</span> (version) <span class="kw">DO NOTHING</span>;</pre>
+      </div>
+    </div>
+
+    <!-- Rollback Script -->
+    <div id="script-rollback" class="panel">
+      <div class="panel-header">
+        <div class="panel-icon">↩️</div>
+        <div>
+          <div class="panel-title">add_indexes_orders_v1_rollback.sql</div>
+          <div class="panel-subtitle">Paired rollback script for V3.4.0. Drops all four indexes concurrently and removes the schema_version entry. Safe to run partially applied migrations.</div>
+          <div class="panel-meta">
+            <span class="meta-chip mc-yellow">paired with: V3.4.0</span>
+            <span class="meta-chip mc-green">IF EXISTS guards</span>
+            <span class="meta-chip mc-blue">CONCURRENT drops</span>
+          </div>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">SQL</span><span class="code-filename">add_indexes_orders_v1_rollback.sql</span></div>
+<pre><span class="cm">-- Drop in reverse order of creation (IF EXISTS = safe on partial apply)</span>
+<span class="kw">SET</span> lock_timeout = <span class="st">'5s'</span>;
+
+<span class="kw">DROP INDEX CONCURRENTLY IF EXISTS</span> <span class="nm">idx_order_items_product_agg</span>;
+<span class="kw">SELECT</span> <span class="fn">pg_sleep</span>(<span class="op">1</span>);
+
+<span class="kw">DROP INDEX CONCURRENTLY IF EXISTS</span> <span class="nm">idx_order_items_order_id</span>;
+<span class="kw">SELECT</span> <span class="fn">pg_sleep</span>(<span class="op">1</span>);
+
+<span class="kw">DROP INDEX CONCURRENTLY IF EXISTS</span> <span class="nm">idx_orders_created_at_status</span>;
+<span class="kw">SELECT</span> <span class="fn">pg_sleep</span>(<span class="op">1</span>);
+
+<span class="kw">DROP INDEX CONCURRENTLY IF EXISTS</span> <span class="nm">idx_orders_customer_status</span>;
+
+<span class="cm">-- Refresh planner stats</span>
+<span class="kw">ANALYZE</span> <span class="nm">orders</span>;
+<span class="kw">ANALYZE</span> <span class="nm">order_items</span>;
+
+<span class="cm">-- Remove schema_version entry</span>
+<span class="kw">DELETE FROM</span> <span class="nm">schema_version</span>
+<span class="kw">WHERE</span> version = <span class="st">'3.4.0'</span>
+  <span class="kw">AND</span> script_name = <span class="st">'add_indexes_orders_v1.sql'</span>;</pre>
+      </div>
+    </div>
+
+    <!-- Validate Script -->
+    <div id="script-validate" class="panel">
+      <div class="panel-header">
+        <div class="panel-icon">✅</div>
+        <div>
+          <div class="panel-title">add_indexes_orders_v1_validate.sql</div>
+          <div class="panel-subtitle">Post-execution validation query. Returns a single JSON result; orchestrator checks result->>'passed' = 'true' before marking the execution as successful.</div>
+          <div class="panel-meta">
+            <span class="meta-chip mc-green">returns JSON</span>
+            <span class="meta-chip mc-blue">orchestrator-parsed</span>
+            <span class="meta-chip mc-green">read-only</span>
+          </div>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">SQL</span><span class="code-filename">add_indexes_orders_v1_validate.sql</span></div>
+<pre><span class="kw">WITH</span> <span class="nm">index_check</span> <span class="kw">AS</span> (
+    <span class="kw">SELECT</span>
+        indexname,
+        <span class="kw">CASE WHEN</span> indisvalid <span class="kw">THEN</span> <span class="st">'valid'</span> <span class="kw">ELSE</span> <span class="st">'INVALID'</span> <span class="kw">END</span> <span class="kw">AS</span> index_status
+    <span class="kw">FROM</span> <span class="nm">pg_indexes</span>
+    <span class="kw">JOIN</span> <span class="nm">pg_class</span>  <span class="kw">ON</span> pg_class.relname  = pg_indexes.indexname
+    <span class="kw">JOIN</span> <span class="nm">pg_index</span>  <span class="kw">ON</span> pg_index.indexrelid = pg_class.oid
+    <span class="kw">WHERE</span> indexname <span class="kw">IN</span> (
+        <span class="st">'idx_orders_customer_status'</span>,
+        <span class="st">'idx_orders_created_at_status'</span>,
+        <span class="st">'idx_order_items_order_id'</span>,
+        <span class="st">'idx_order_items_product_agg'</span>
+    )
+),
+<span class="nm">version_check</span> <span class="kw">AS</span> (
+    <span class="kw">SELECT COUNT</span>(*) <span class="kw">AS</span> cnt
+    <span class="kw">FROM</span> <span class="nm">schema_version</span>
+    <span class="kw">WHERE</span> version = <span class="st">'3.4.0'</span>
+)
+<span class="kw">SELECT</span> <span class="fn">json_build_object</span>(
+    <span class="st">'passed'</span>,           (<span class="kw">SELECT COUNT</span>(*) = <span class="op">4</span>
+                          <span class="kw">AND</span> <span class="fn">bool_and</span>(index_status = <span class="st">'valid'</span>)
+                          <span class="kw">FROM</span> index_check)
+                         <span class="kw">AND</span> (<span class="kw">SELECT</span> cnt = <span class="op">1</span> <span class="kw">FROM</span> version_check),
+    <span class="st">'indexes_found'</span>,     (<span class="kw">SELECT COUNT</span>(*) <span class="kw">FROM</span> index_check),
+    <span class="st">'indexes_valid'</span>,     (<span class="kw">SELECT COUNT</span>(*) <span class="kw">FROM</span> index_check
+                          <span class="kw">WHERE</span> index_status = <span class="st">'valid'</span>),
+    <span class="st">'version_recorded'</span>,  (<span class="kw">SELECT</span> cnt <span class="kw">FROM</span> version_check),
+    <span class="st">'errors'</span>,            (<span class="kw">SELECT</span> <span class="fn">COALESCE</span>(<span class="fn">json_agg</span>(
+                              indexname || <span class="st">': '</span> || index_status),
+                              <span class="st">'[]'</span>::json)
+                          <span class="kw">FROM</span> index_check
+                          <span class="kw">WHERE</span> index_status != <span class="st">'valid'</span>)
+) <span class="kw">AS</span> result;</pre>
+      </div>
+    </div>
+
+    <!-- Skills Overview -->
+    <div id="overview" class="panel">
+      <div class="panel-header">
+        <div class="panel-icon">🗺️</div>
+        <div>
+          <div class="panel-title">All Skills — DBA Role</div>
+          <div class="panel-subtitle">Complete pool of 16 skills available to the database_administrator role. Risk level and approval requirements shown per skill.</div>
+        </div>
+      </div>
+      <div class="skill-grid">
+        <div class="skill-card"><div class="skill-card-top"><span class="skill-card-icon">🔍</span><span class="skill-card-name">db_schema_introspect</span><span class="skill-card-version">v1.2.0</span></div><div class="skill-card-desc">Read and document current schema — tables, columns, indexes, FK relationships.</div><div class="skill-card-tags"><span class="skill-tag">schema</span><span class="skill-tag">read</span><span class="skill-tag">L2</span><span class="risk-dot risk-low" title="low"></span></div></div>
+        <div class="skill-card"><div class="skill-card-top"><span class="skill-card-icon">🔀</span><span class="skill-card-name">db_schema_migrate</span><span class="skill-card-version">v3.0.1</span></div><div class="skill-card-desc">Apply versioned schema migrations via pre-approved contract scripts.</div><div class="skill-card-tags"><span class="skill-tag">schema</span><span class="skill-tag">write</span><span class="skill-tag">L2</span><span class="risk-dot risk-high" title="high"></span></div></div>
+        <div class="skill-card"><div class="skill-card-top"><span class="skill-card-icon">↩️</span><span class="skill-card-name">db_schema_rollback</span><span class="skill-card-version">v2.0.0</span></div><div class="skill-card-desc">Revert a schema migration to the prior version using the paired rollback script.</div><div class="skill-card-tags"><span class="skill-tag">rollback</span><span class="skill-tag">write</span><span class="skill-tag">L3</span><span class="risk-dot risk-high" title="high"></span></div></div>
+        <div class="skill-card"><div class="skill-card-top"><span class="skill-card-icon">🔬</span><span class="skill-card-name">db_query_analyser</span><span class="skill-card-version">v2.3.0</span></div><div class="skill-card-desc">Run EXPLAIN ANALYZE, capture slow query logs, identify bottlenecks.</div><div class="skill-card-tags"><span class="skill-tag">performance</span><span class="skill-tag">read</span><span class="skill-tag">L2</span><span class="risk-dot risk-low" title="low"></span></div></div>
+        <div class="skill-card"><div class="skill-card-top"><span class="skill-card-icon">📇</span><span class="skill-card-name">db_index_advisor</span><span class="skill-card-version">v1.5.0</span></div><div class="skill-card-desc">Recommend and apply index changes based on pg_stat_statements query patterns.</div><div class="skill-card-tags"><span class="skill-tag">index</span><span class="skill-tag">write</span><span class="skill-tag">L2</span><span class="risk-dot risk-medium" title="medium"></span></div></div>
+        <div class="skill-card"><div class="skill-card-top"><span class="skill-card-icon">📈</span><span class="skill-card-name">db_stats_refresh</span><span class="skill-card-version">v1.0.0</span></div><div class="skill-card-desc">Run ANALYZE to refresh query planner statistics on target tables.</div><div class="skill-card-tags"><span class="skill-tag">maintenance</span><span class="skill-tag">write</span><span class="skill-tag">L1</span><span class="risk-dot risk-low" title="low"></span></div></div>
+        <div class="skill-card"><div class="skill-card-top"><span class="skill-card-icon">💾</span><span class="skill-card-name">db_backup_full</span><span class="skill-card-version">v2.1.0</span></div><div class="skill-card-desc">Trigger pg_dump full backup to the approved S3 backup bucket.</div><div class="skill-card-tags"><span class="skill-tag">backup</span><span class="skill-tag">s3</span><span class="skill-tag">L2</span><span class="risk-dot risk-low" title="low"></span></div></div>
+        <div class="skill-card"><div class="skill-card-top"><span class="skill-card-icon">🔁</span><span class="skill-card-name">db_backup_incremental</span><span class="skill-card-version">v1.3.0</span></div><div class="skill-card-desc">Trigger WAL-based incremental backup using pgBackRest.</div><div class="skill-card-tags"><span class="skill-tag">backup</span><span class="skill-tag">wal</span><span class="skill-tag">L2</span><span class="risk-dot risk-low" title="low"></span></div></div>
+        <div class="skill-card"><div class="skill-card-top"><span class="skill-card-icon">🧪</span><span class="skill-card-name">db_restore_validate</span><span class="skill-card-version">v2.0.0</span></div><div class="skill-card-desc">Restore to sandbox and run integrity checks. Requires approval.</div><div class="skill-card-tags"><span class="skill-tag">restore</span><span class="skill-tag">validation</span><span class="skill-tag">L3</span><span class="risk-dot risk-medium" title="medium"></span></div></div>
+        <div class="skill-card"><div class="skill-card-top"><span class="skill-card-icon">👤</span><span class="skill-card-name">db_user_create</span><span class="skill-card-version">v1.2.0</span></div><div class="skill-card-desc">Create database users/roles with scoped privileges. Requires approval.</div><div class="skill-card-tags"><span class="skill-tag">user_mgmt</span><span class="skill-tag">rbac</span><span class="skill-tag">L2</span><span class="risk-dot risk-high" title="high"></span></div></div>
+        <div class="skill-card"><div class="skill-card-top"><span class="skill-card-icon">🕵️</span><span class="skill-card-name">db_user_audit</span><span class="skill-card-version">v1.4.0</span></div><div class="skill-card-desc">Audit all users and roles, surface over-privileged accounts and anomalies.</div><div class="skill-card-tags"><span class="skill-tag">audit</span><span class="skill-tag">compliance</span><span class="skill-tag">L2</span><span class="risk-dot risk-low" title="low"></span></div></div>
+        <div class="skill-card"><div class="skill-card-top"><span class="skill-card-icon">🚫</span><span class="skill-card-name">db_privilege_revoke</span><span class="skill-card-version">v1.1.0</span></div><div class="skill-card-desc">Revoke over-privileged grants from users and roles. Requires approval.</div><div class="skill-card-tags"><span class="skill-tag">security</span><span class="skill-tag">write</span><span class="skill-tag">L2</span><span class="risk-dot risk-high" title="high"></span></div></div>
+        <div class="skill-card" style="border-color:#30363d; border-width:2px;"><div class="skill-card-top"><span class="skill-card-icon">▶️</span><span class="skill-card-name">db_contract_script_runner</span><span class="skill-card-version">v2.1.0</span></div><div class="skill-card-desc">Execute pre-approved contract scripts with checksum, approval, rollback, and audit.</div><div class="skill-card-tags"><span class="skill-tag">contract_script</span><span class="skill-tag">execution</span><span class="skill-tag">L3</span><span class="risk-dot risk-high" title="high"></span></div></div>
+        <div class="skill-card"><div class="skill-card-top"><span class="skill-card-icon">👁️</span><span class="skill-card-name">db_contract_script_dry_run</span><span class="skill-card-version">v1.0.0</span></div><div class="skill-card-desc">Dry-run a contract script inside a rolled-back transaction. Produces impact report.</div><div class="skill-card-tags"><span class="skill-tag">dry_run</span><span class="skill-tag">validation</span><span class="skill-tag">L2</span><span class="risk-dot risk-low" title="low"></span></div></div>
+        <div class="skill-card"><div class="skill-card-top"><span class="skill-card-icon">📊</span><span class="skill-card-name">db_health_report</span><span class="skill-card-version">v1.4.0</span></div><div class="skill-card-desc">Full health report: bloat, indexes, replication, locks, connections, slow queries.</div><div class="skill-card-tags"><span class="skill-tag">report</span><span class="skill-tag">monitoring</span><span class="skill-tag">L2</span><span class="risk-dot risk-low" title="low"></span></div></div>
+        <div class="skill-card"><div class="skill-card-top"><span class="skill-card-icon">📜</span><span class="skill-card-name">db_change_log_report</span><span class="skill-card-version">v1.0.0</span></div><div class="skill-card-desc">Auditable change log of all DDL/DML executed by the DBA agent.</div><div class="skill-card-tags"><span class="skill-tag">audit</span><span class="skill-tag">compliance</span><span class="skill-tag">L1</span><span class="risk-dot risk-low" title="low"></span></div></div>
+      </div>
+    </div>
+
+    <!-- E2E Flow -->
+    <div id="flow" class="panel">
+      <div class="panel-header">
+        <div class="panel-icon">🔄</div>
+        <div>
+          <div class="panel-title">End-to-End Execution Flow</div>
+          <div class="panel-subtitle">Walkthrough of a complete contract script execution request from task submission to audit logging — demonstrating all governance layers.</div>
+        </div>
+      </div>
+      <div class="flow">
+        <div class="flow-step"><div class="step-num">1</div><div><div class="step-title">Task Submission</div><div class="step-desc">User submits: <em>"Run add_indexes_orders_v1.sql on prod-db-01 — approval CHANGE-2024-0847"</em>. Role context: <code style="color:#a5d6ff">database_administrator</code>.</div></div></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step"><div class="step-num">2</div><div><div class="step-title">Orchestrator — Role Validation</div><div class="step-desc">Queries agent.yaml via Governance Layer. Confirms role is <code style="color:#a5d6ff">database_administrator</code>, trust_level=high, MFA verified, within change window (weekday 08:00–18:00 UTC).</div></div></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step"><div class="step-num">3</div><div><div class="step-title">L1 Skill Discovery</div><div class="step-desc">Orchestrator loads <code style="color:#a5d6ff">dba_l1_manifest.json</code> from S3. Intent keywords match <code style="color:#a5d6ff">db_contract_script_runner</code> (tags: contract_script, execution). Context level: L3 flagged.</div></div></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step"><div class="step-num">4</div><div><div class="step-title">Approval Gate</div><div class="step-desc"><code style="color:#a5d6ff">db_contract_script_runner</code> is in <code style="color:#a5d6ff">governance.require_approval.override_skills</code>. Approval ticket CHANGE-2024-0847 validated via Governance API. ✓ Approved by senior_dba.</div></div></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step"><div class="step-num">5</div><div><div class="step-title">L2 Skill Load — SKILL.md fetched</div><div class="step-desc">Full <code style="color:#a5d6ff">SKILL_db_contract_script_runner.md</code> loaded. LLM Worker now has complete execution knowledge: steps, parameters, error codes, edge cases.</div></div></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step"><div class="step-num">6</div><div><div class="step-title">L3 Load — API Specs + Contract Script</div><div class="step-desc">Fetches <code style="color:#a5d6ff">approval_api_spec.yaml</code>, <code style="color:#a5d6ff">postgres_lock_reference.md</code>, and <code style="color:#a5d6ff">add_indexes_orders_v1.sql</code> from S3. SHA-256 checksum verified against manifest.</div></div></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step"><div class="step-num">7</div><div><div class="step-title">Execution</div><div class="step-desc">4 <code style="color:#7ee787">CONCURRENT</code> indexes built on orders/order_items. ~4 min build time, no table locks. ANALYZE run post-build. schema_version updated.</div></div></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step"><div class="step-num">8</div><div><div class="step-title">Validation</div><div class="step-desc"><code style="color:#a5d6ff">add_indexes_orders_v1_validate.sql</code> executed. Returns <code style="color:#7ee787">passed: true</code>, 4/4 indexes valid, version_recorded: 1.</div></div></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step"><div class="step-num">9</div><div><div class="step-title">Audit + Notify</div><div class="step-desc">Structured JSON audit record written to <code style="color:#a5d6ff">audit_log_store</code>. Execution counter decremented (used 1 of 60/hr). Summary posted to <code style="color:#a5d6ff">#dba-alerts</code>.</div></div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+</script>
+</body>
+</html>
