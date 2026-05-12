@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Role-Based Agentic System · Queue Analyst Scenario</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg: #080c14;
+    --surface: #0d1422;
+    --surface2: #111827;
+    --border: #1e2d45;
+    --accent-blue: #2563eb;
+    --accent-cyan: #06b6d4;
+    --accent-violet: #7c3aed;
+    --accent-emerald: #059669;
+    --accent-amber: #d97706;
+    --accent-rose: #e11d48;
+    --text: #e2e8f0;
+    --text-dim: #64748b;
+    --text-muted: #334155;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    padding: 32px 24px;
+    overflow-x: auto;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  .page-header h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .page-header p {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 6px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .diagram {
+    max-width: 1120px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .layer {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+    position: relative;
+    margin-bottom: 2px;
+  }
+
+  .layer-label {
+    position: absolute;
+    top: -10px;
+    left: 16px;
+    background: var(--bg);
+    padding: 0 8px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .connector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 28px;
+    position: relative;
+  }
+  .connector::before {
+    content: '';
+    width: 1px;
+    height: 100%;
+    background: var(--border);
+    position: absolute;
+    left: 50%;
+  }
+  .connector-label {
+    font-size: 9px;
+    color: var(--text-dim);
+    background: var(--bg);
+    padding: 2px 10px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    z-index: 1;
+    letter-spacing: 0.06em;
+  }
+  .arrow-down {
+    position: absolute;
+    left: 50%;
+    bottom: -1px;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid var(--border);
+  }
+
+  /* ── LAYER 1: PERSONA ── */
+  .layer-persona {
+    border-color: #1e3a5f;
+    background: linear-gradient(135deg, rgba(37,99,235,0.06) 0%, transparent 60%);
+  }
+  .layer-persona .layer-label { color: #60a5fa; }
+
+  .persona-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .persona-card {
+    background: rgba(37,99,235,0.07);
+    border: 1px solid rgba(37,99,235,0.3);
+    border-radius: 3px;
+    padding: 14px;
+  }
+
+  .persona-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .persona-icon {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    background: rgba(37,99,235,0.15);
+    border: 1px solid rgba(37,99,235,0.3);
+    flex-shrink: 0;
+  }
+
+  .persona-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: #93c5fd;
+  }
+
+  .persona-sub {
+    font-size: 9px;
+    color: var(--text-dim);
+    margin-top: 1px;
+  }
+
+  .yaml-box {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 8px 10px;
+    font-size: 9px;
+    line-height: 1.8;
+  }
+  .yk { color: #67e8f9; }
+  .yv { color: #c4b5fd; }
+  .ys { color: #86efac; }
+  .yd { color: #64748b; }
+
+  .access-row {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .pill {
+    font-size: 8px;
+    padding: 2px 7px;
+    border-radius: 2px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .p-blue   { background: rgba(37,99,235,0.18); color: #93c5fd; border: 1px solid rgba(37,99,235,0.3); }
+  .p-cyan   { background: rgba(6,182,212,0.13); color: #67e8f9; border: 1px solid rgba(6,182,212,0.25); }
+  .p-violet { background: rgba(124,58,237,0.13); color: #c4b5fd; border: 1px solid rgba(124,58,237,0.25); }
+  .p-emerald{ background: rgba(5,150,105,0.13); color: #6ee7b7; border: 1px solid rgba(5,150,105,0.25); }
+  .p-amber  { background: rgba(217,119,6,0.13); color: #fcd34d; border: 1px solid rgba(217,119,6,0.25); }
+  .p-rose   { background: rgba(225,29,72,0.13); color: #fda4af; border: 1px solid rgba(225,29,72,0.25); }
+
+  /* ── LAYER 2: ORCHESTRATOR ── */
+  .layer-orch {
+    border-color: rgba(124,58,237,0.4);
+    background: linear-gradient(135deg, rgba(124,58,237,0.07) 0%, transparent 60%);
+  }
+  .layer-orch .layer-label { color: #a78bfa; }
+
+  .orch-grid {
+    display: grid;
+    grid-template-columns: 220px 1fr 180px;
+    gap: 12px;
+    align-items: start;
+  }
+
+  .orch-box {
+    border-radius: 3px;
+    padding: 12px;
+    border: 1px solid rgba(124,58,237,0.3);
+    background: rgba(124,58,237,0.08);
+  }
+
+  .orch-box.engine {
+    border-color: rgba(6,182,212,0.3);
+    background: rgba(6,182,212,0.06);
+  }
+
+  .box-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-v { background: #7c3aed; box-shadow: 0 0 6px rgba(124,58,237,0.6); }
+  .dot-c { background: #06b6d4; box-shadow: 0 0 6px rgba(6,182,212,0.6); }
+
+  .box-detail {
+    font-size: 9px;
+    color: var(--text-dim);
+    line-height: 1.8;
+  }
+
+  .loop-box {
+    background: rgba(124,58,237,0.06);
+    border: 1px dashed rgba(124,58,237,0.3);
+    border-radius: 3px;
+    padding: 10px;
+    margin-top: 10px;
+  }
+
+  .loop-label {
+    font-size: 8px;
+    font-weight: 700;
+    color: #a78bfa;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .loop-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .loop-step {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+
+  .step-num {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: rgba(124,58,237,0.2);
+    border: 1px solid rgba(124,58,237,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8px;
+    color: #c4b5fd;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* ── LAYER 3: USE CASES ── */
+  .layer-uc {
+    border-color: rgba(6,182,212,0.35);
+    background: linear-gradient(135deg, rgba(6,182,212,0.05) 0%, transparent 60%);
+  }
+  .layer-uc .layer-label { color: var(--accent-cyan); }
+
+  .uc-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .uc-card {
+    background: rgba(6,182,212,0.05);
+    border: 1px solid rgba(6,182,212,0.22);
+    border-radius: 3px;
+    padding: 14px;
+  }
+
+  .uc-header {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: #67e8f9;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .uc-desc {
+    font-size: 9px;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+    line-height: 1.6;
+  }
+
+  .tasks-label {
+    font-size: 8px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 5px;
+  }
+
+  .task-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9px;
+    margin-bottom: 10px;
+  }
+
+  .task-table th {
+    background: rgba(255,255,255,0.04);
+    color: var(--text-muted);
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .task-table td {
+    padding: 4px 8px;
+    color: var(--text-dim);
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    vertical-align: middle;
+  }
+
+  .task-table tr:hover td {
+    background: rgba(6,182,212,0.04);
+  }
+
+  .task-name { color: #e2e8f0; font-weight: 600; }
+  .skill-ref { color: #6ee7b7; }
+  .shared-skill { color: #c4b5fd; }
+  .tool-ref { color: #fcd34d; }
+
+  .shared-note {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 9px;
+    color: var(--text-dim);
+    background: rgba(124,58,237,0.06);
+    border: 1px dashed rgba(124,58,237,0.25);
+    border-radius: 2px;
+    padding: 5px 8px;
+    margin-top: 4px;
+  }
+
+  /* ── BOTTOM: REGISTRIES ── */
+  .reg-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .reg-layer {
+    border-radius: 4px;
+    padding: 16px;
+    position: relative;
+    border: 1px solid var(--border);
+  }
+
+  .reg-layer.skills {
+    border-color: rgba(5,150,105,0.4);
+    background: linear-gradient(135deg, rgba(5,150,105,0.06) 0%, transparent 60%);
+  }
+
+  .reg-layer.tools {
+    border-color: rgba(217,119,6,0.4);
+    background: linear-gradient(135deg, rgba(217,119,6,0.06) 0%, transparent 60%);
+  }
+
+  .reg-layer.skills .layer-label { color: #34d399; }
+  .reg-layer.tools .layer-label { color: #fbbf24; }
+
+  .skill-levels {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .sl-row {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .sl-tag {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 2px;
+    text-align: center;
+    letter-spacing: 0.04em;
+  }
+  .sl-l1 { background: rgba(5,150,105,0.2); color: #34d399; border: 1px solid rgba(5,150,105,0.3); }
+  .sl-l2 { background: rgba(6,182,212,0.15); color: #67e8f9; border: 1px solid rgba(6,182,212,0.25); }
+  .sl-l3 { background: rgba(124,58,237,0.15); color: #c4b5fd; border: 1px solid rgba(124,58,237,0.25); }
+
+  .sl-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .chip {
+    font-size: 9px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+
+  .chip.highlight-edr   { border-color: rgba(6,182,212,0.4); color: #67e8f9; background: rgba(6,182,212,0.08); }
+  .chip.highlight-rro   { border-color: rgba(124,58,237,0.4); color: #c4b5fd; background: rgba(124,58,237,0.08); }
+  .chip.highlight-shared{ border-color: rgba(5,150,105,0.4); color: #6ee7b7; background: rgba(5,150,105,0.08); }
+
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .tool-card {
+    background: rgba(217,119,6,0.06);
+    border: 1px solid rgba(217,119,6,0.2);
+    border-radius: 2px;
+    padding: 8px;
+  }
+
+  .tool-card .tname { font-size: 10px; font-weight: 700; color: #fbbf24; margin-bottom: 2px; }
+  .tool-card .tdesc { font-size: 8px; color: var(--text-dim); line-height: 1.5; }
+
+  .shared-badge {
+    font-size: 8px;
+    padding: 1px 5px;
+    border-radius: 2px;
+    background: rgba(5,150,105,0.15);
+    color: #34d399;
+    border: 1px solid rgba(5,150,105,0.25);
+    float: right;
+  }
+
+  /* legend */
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+  .ll { width: 20px; height: 2px; }
+
+  .gov-strip {
+    background: rgba(225,29,72,0.04);
+    border: 1px solid rgba(225,29,72,0.2);
+    border-radius: 3px;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+  }
+  .gov-label { font-size: 9px; font-weight: 700; color: #fb7185; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
+  .gov-item { font-size: 9px; color: var(--text-dim); padding: 2px 8px; border: 1px solid rgba(225,29,72,0.2); border-radius: 2px; }
+
+  @media (max-width: 800px) {
+    .persona-row, .uc-row, .reg-row { grid-template-columns: 1fr; }
+    .orch-grid { grid-template-columns: 1fr; }
+    .tools-grid { grid-template-columns: repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Role-Based Agentic System · Queue Analyst Scenario</h1>
+  <p>Personas: Queue Analyst · Auditor &nbsp;|&nbsp; Use Cases: EDR · RRO &nbsp;|&nbsp; Shared Skills + Tools</p>
+</div>
+
+<div class="diagram">
+
+  <!-- ════════════════════════════ -->
+  <!-- LAYER 1: PERSONA            -->
+  <!-- ════════════════════════════ -->
+  <div class="layer layer-persona">
+    <div class="layer-label">Layer 1 · Persona — Grouping &amp; Access Control Only (No Execution)</div>
+    <div class="persona-row">
+
+      <div class="persona-card">
+        <div class="persona-head">
+          <div class="persona-icon">👤</div>
+          <div>
+            <div class="persona-name">Queue Analyst</div>
+            <div class="persona-sub">agent.yaml · identity + allowed use cases</div>
+          </div>
+        </div>
+        <div class="yaml-box">
+          <span class="yk">persona:</span> <span class="ys">queue_analyst</span><br>
+          <span class="yk">allowed_use_cases:</span><br>
+          &nbsp;&nbsp;- <span class="ys">uc_edr</span> <span class="yd"># EDR analysis</span><br>
+          &nbsp;&nbsp;- <span class="ys">uc_rro</span> <span class="yd"># RRO analysis</span><br>
+          <span class="yk">max_executions:</span> <span class="yv">100</span><br>
+          <span class="yk">approval_required:</span> <span class="yv">false</span>
+        </div>
+        <div class="access-row">
+          <span class="pill p-blue">UC: EDR</span>
+          <span class="pill p-cyan">UC: RRO</span>
+          <span class="pill p-emerald">shared skills</span>
+          <span class="pill p-amber">shared tools</span>
+        </div>
+      </div>
+
+      <div class="persona-card">
+        <div class="persona-head">
+          <div class="persona-icon">🔍</div>
+          <div>
+            <div class="persona-name">Auditor</div>
+            <div class="persona-sub">agent.yaml · identity + allowed use cases</div>
+          </div>
+        </div>
+        <div class="yaml-box">
+          <span class="yk">persona:</span> <span class="ys">auditor</span><br>
+          <span class="yk">allowed_use_cases:</span><br>
+          &nbsp;&nbsp;- <span class="ys">uc_edr</span> <span class="yd"># read-only EDR audit</span><br>
+          <span class="yk">max_executions:</span> <span class="yv">50</span><br>
+          <span class="yk">approval_required:</span> <span class="yv">true</span>
+        </div>
+        <div class="access-row">
+          <span class="pill p-blue">UC: EDR (read-only)</span>
+          <span class="pill p-rose">approval gate</span>
+          <span class="pill p-emerald">shared skills</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="connector">
+    <span class="connector-label">submit task + persona → orchestrator validates access via agent.yaml → routes to use case</span>
+    <div class="arrow-down"></div>
+  </div>
+
+  <!-- ════════════════════════════════════ -->
+  <!-- LAYER 2: ORCHESTRATOR               -->
+  <!-- ════════════════════════════════════ -->
+  <div class="layer layer-orch">
+    <div class="layer-label">Layer 2 · Agent Orchestrator — Role Enforcement &amp; Task Execution Loop</div>
+    <div class="orch-grid">
+
+      <div class="orch-box">
+        <div class="box-title"><span class="dot dot-v"></span> Role Enforcement</div>
+        <div class="box-detail">
+          1. Read persona's agent.yaml<br>
+          2. Check: is EDR or RRO allowed?<br>
+          3. Enforce approval gate (Auditor)<br>
+          4. Inject role context into session<br>
+          5. Load use case skill file
+        </div>
+        <div style="margin-top:10px;font-size:9px;color:#fb7185;border:1px solid rgba(225,29,72,0.2);padding:6px 8px;border-radius:2px;background:rgba(225,29,72,0.04)">
+          ⛨ Queue Analyst → EDR ✓<br>
+          ⛨ Queue Analyst → RRO ✓<br>
+          ⛨ Auditor → EDR ✓ (approval)<br>
+          ⛨ Auditor → RRO ✗ denied
+        </div>
+      </div>
+
+      <div class="orch-box engine">
+        <div class="box-title"><span class="dot dot-c"></span> Execution Engine — Task Loop</div>
+        <div class="box-detail">Reads the use case YAML planner, iterates each task, resolves skill + tool, executes via LLM, moves to next task</div>
+        <div class="loop-box">
+          <div class="loop-label">For each task in use case planner:</div>
+          <div class="loop-steps">
+            <div class="loop-step"><span class="step-num">1</span>Load task definition from UC YAML</div>
+            <div class="loop-step"><span class="step-num">2</span>Resolve task.skill_ref → pull from skill registry (L1/L2/L3)</div>
+            <div class="loop-step"><span class="step-num">3</span>Resolve task.tool_ref → pull from tool registry</div>
+            <div class="loop-step"><span class="step-num">4</span>Compose: job desc + skill context + tool</div>
+            <div class="loop-step"><span class="step-num">5</span>Send to Agent LLM Worker → execute</div>
+            <div class="loop-step"><span class="step-num">6</span>Return result → proceed to next task</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="orch-box">
+        <div class="box-title"><span class="dot dot-v"></span> Governance</div>
+        <div class="box-detail">
+          Audit log per task<br>
+          Approval gates<br>
+          Max execution limits<br>
+          Error + retry<br>
+          Execution tracing
+        </div>
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:9px;color:#64748b;padding:3px 7px;border-left:2px solid rgba(124,58,237,0.4)">✓ task audit trail</div>
+          <div style="font-size:9px;color:#64748b;padding:3px 7px;border-left:2px solid rgba(124,58,237,0.4)">✓ persona limits</div>
+          <div style="font-size:9px;color:#64748b;padding:3px 7px;border-left:2px solid rgba(124,58,237,0.4)">✓ approval gates</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="connector">
+    <span class="connector-label">orchestrator loads use case skill file → reads task list → begins task loop</span>
+    <div class="arrow-down"></div>
+  </div>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- LAYER 3: USE CASE SKILLS                 -->
+  <!-- ════════════════════════════════════════ -->
+  <div class="layer layer-uc">
+    <div class="layer-label">Layer 3 · Use Case / Project Skills — YAML Planner with Task Decomposition</div>
+    <div class="uc-row">
+
+      <!-- EDR USE CASE -->
+      <div class="uc-card">
+        <div class="uc-header">📋 UC: EDR — Event Driven Review</div>
+        <div class="uc-desc">Each task explicitly declares its atomic skill ref and tool ref. Orchestrator resolves these at execution time from the registries.</div>
+        <div class="tasks-label">Task Planner (YAML)</div>
+        <table class="task-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Task</th>
+              <th>Skill Ref</th>
+              <th>Tool</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>T1</td><td class="task-name">EDR Question 1</td><td class="skill-ref">edr-q1-skill</td><td class="tool-ref">db-tool</td></tr>
+            <tr><td>T2</td><td class="task-name">EDR Question 2</td><td class="skill-ref">edr-q2-skill</td><td class="tool-ref">api-tool</td></tr>
+            <tr><td>T3</td><td class="task-name">Fetch Features</td><td class="shared-skill">data-feature ★</td><td class="tool-ref">db-tool</td></tr>
+            <tr><td>T4</td><td class="task-name">Validate Data</td><td class="shared-skill">data-validator ★</td><td class="tool-ref">api-tool</td></tr>
+            <tr><td>T5</td><td class="task-name">EDR Question 3</td><td class="skill-ref">edr-q3-skill</td><td class="tool-ref">db-tool</td></tr>
+            <tr><td>T6</td><td class="task-name">EDR Question 4</td><td class="skill-ref">edr-q4-skill</td><td class="tool-ref">api-tool</td></tr>
+            <tr><td>T7</td><td class="task-name">Generate Worded</td><td class="shared-skill">worded-gen ★</td><td class="tool-ref">file-tool</td></tr>
+            <tr><td>…</td><td class="task-name" style="color:var(--text-muted)">T8–T10</td><td class="skill-ref" style="color:var(--text-muted)">edr-q5..q8</td><td class="tool-ref" style="color:var(--text-muted)">db/api-tool</td></tr>
+          </tbody>
+        </table>
+        <div class="shared-note">
+          ★ Shared skills (data-feature, data-validator, worded-gen) pulled from atomic skill registry — same as RRO
+        </div>
+      </div>
+
+      <!-- RRO USE CASE -->
+      <div class="uc-card" style="border-color:rgba(124,58,237,0.22);background:rgba(124,58,237,0.04)">
+        <div class="uc-header" style="color:#c4b5fd">📋 UC: RRO — Risk Review Output</div>
+        <div class="uc-desc">Separate use case with its own questions, but reuses the exact same shared atomic skills and tools from the registries.</div>
+        <div class="tasks-label">Task Planner (YAML)</div>
+        <table class="task-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Task</th>
+              <th>Skill Ref</th>
+              <th>Tool</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>T1</td><td class="task-name">RRO Question 1</td><td class="skill-ref" style="color:#c4b5fd">rro-q1-skill</td><td class="tool-ref">db-tool</td></tr>
+            <tr><td>T2</td><td class="task-name">RRO Question 2</td><td class="skill-ref" style="color:#c4b5fd">rro-q2-skill</td><td class="tool-ref">api-tool</td></tr>
+            <tr><td>T3</td><td class="task-name">Fetch Features</td><td class="shared-skill">data-feature ★</td><td class="tool-ref">db-tool</td></tr>
+            <tr><td>T4</td><td class="task-name">Validate Data</td><td class="shared-skill">data-validator ★</td><td class="tool-ref">api-tool</td></tr>
+            <tr><td>T5</td><td class="task-name">RRO Question 3</td><td class="skill-ref" style="color:#c4b5fd">rro-q3-skill</td><td class="tool-ref">db-tool</td></tr>
+            <tr><td>T6</td><td class="task-name">RRO Question 4</td><td class="skill-ref" style="color:#c4b5fd">rro-q4-skill</td><td class="tool-ref">api-tool</td></tr>
+            <tr><td>T7</td><td class="task-name">Generate Worded</td><td class="shared-skill">worded-gen ★</td><td class="tool-ref">file-tool</td></tr>
+            <tr><td>…</td><td class="task-name" style="color:var(--text-muted)">T8–T10</td><td class="skill-ref" style="color:var(--text-muted)">rro-q5..q8</td><td class="tool-ref" style="color:var(--text-muted)">db/api-tool</td></tr>
+          </tbody>
+        </table>
+        <div class="shared-note" style="border-color:rgba(124,58,237,0.25);background:rgba(124,58,237,0.06)">
+          ★ Same shared skills (data-feature, data-validator, worded-gen) — reused from registry, not duplicated
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="connector">
+    <span class="connector-label">task.skill_ref → pull atomic skill (L1/L2/L3) · task.tool_ref → pull tool · both from shared registries</span>
+    <div class="arrow-down"></div>
+  </div>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- REGISTRIES                                   -->
+  <!-- ════════════════════════════════════════════ -->
+  <div class="reg-row">
+
+    <!-- SKILL REGISTRY -->
+    <div class="reg-layer skills">
+      <div class="layer-label">Atomic Skill Registry</div>
+      <div class="skill-levels">
+
+        <div class="sl-row">
+          <div class="sl-tag sl-l1">L1 · SKILL.MD</div>
+          <div class="sl-chips">
+            <span class="chip">agent skills</span>
+            <span class="chip">IO spec</span>
+            <span class="chip">intent tags</span>
+            <span class="chip">metadata</span>
+          </div>
+        </div>
+
+        <div class="sl-row">
+          <div class="sl-tag sl-l2">L2 · Full Skill</div>
+          <div class="sl-chips">
+            <span class="chip highlight-edr">edr-q1..q10</span>
+            <span class="chip highlight-rro">rro-q1..q10</span>
+            <span class="chip highlight-shared">data-feature ★</span>
+            <span class="chip highlight-shared">data-validator ★</span>
+            <span class="chip highlight-shared">worded-gen ★</span>
+          </div>
+        </div>
+
+        <div class="sl-row">
+          <div class="sl-tag sl-l3">L3 · References</div>
+          <div class="sl-chips">
+            <span class="chip">API specs</span>
+            <span class="chip">templates</span>
+            <span class="chip">validators</span>
+            <span class="chip">test sets</span>
+            <span class="chip">scripts</span>
+          </div>
+        </div>
+
+      </div>
+      <div style="margin-top:10px;font-size:9px;color:var(--text-muted);line-height:1.6">
+        ★ Shared skills (data-feature, data-validator, worded-gen) are loaded once and referenced by both EDR and RRO use cases — no duplication
+      </div>
+    </div>
+
+    <!-- TOOL REGISTRY -->
+    <div class="reg-layer tools">
+      <div class="layer-label">Tool Registry — Shared Across All Use Cases</div>
+      <div class="tools-grid">
+
+        <div class="tool-card">
+          <div class="tname">🗄️ DB Tool <span class="shared-badge">shared</span></div>
+          <div class="tdesc">SQL queries, schema reads, CRUD — used by EDR T1,T3,T5 and RRO T1,T3,T5</div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tname">🌐 API Tool <span class="shared-badge">shared</span></div>
+          <div class="tdesc">REST / SOR calls — used by EDR T2,T4,T6 and RRO T2,T4,T6</div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tname">📁 File Tool <span class="shared-badge">shared</span></div>
+          <div class="tdesc">Write worded generation output — EDR T7 and RRO T7</div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tname">🔍 Search Tool</div>
+          <div class="tdesc">Vector / semantic retrieval for context enrichment</div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tname">⚡ Exec Tool</div>
+          <div class="tdesc">Code runner, validation scripts, sandboxed env</div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tname">📊 Report Tool</div>
+          <div class="tdesc">Format and render final output reports</div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- GOVERNANCE -->
+  <div class="gov-strip">
+    <div class="gov-label">⛨ Governance</div>
+    <div class="gov-item">Queue Analyst: EDR ✓ RRO ✓</div>
+    <div class="gov-item">Auditor: EDR ✓ (approval) RRO ✗</div>
+    <div class="gov-item">Audit log per task</div>
+    <div class="gov-item">Max executions enforced</div>
+    <div class="gov-item">Skill access matrix</div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-item"><div class="ll" style="background:#2563eb"></div> control flow</div>
+    <div class="legend-item"><div class="ll" style="background:#06b6d4"></div> data flow</div>
+    <div class="legend-item"><div class="ll" style="background:#059669;border-top:1px dashed #059669"></div> shared skill access</div>
+    <div class="legend-item"><div class="ll" style="background:#7c3aed"></div> governance</div>
+    <div style="font-size:9px;color:var(--text-muted);width:100%;text-align:center;margin-top:6px">
+      ★ Shared atomic skills (data-feature · data-validator · worded-gen) and tools (DB · API · File) are defined once in registries and reused by both EDR and RRO
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
